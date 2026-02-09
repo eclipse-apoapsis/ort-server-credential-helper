@@ -1,0 +1,21 @@
+.gradle/
+.kotlin/
+build/
+out/
+/*.iml
+
+# Intellij IDEA
+/.idea/*
+!.idea/copyright/
+
+# Kotest temporary directory
+.kotest/
+
+# Mac
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Agent files.
+.github/chatmodes/

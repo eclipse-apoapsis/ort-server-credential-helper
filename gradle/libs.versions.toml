@@ -15,12 +15,20 @@
 # SPDX-License-Identifier: Apache-2.0
 # License-Filename: LICENSE
 
+
 [versions]
+
+# Gradle plugins
+detektPlugin = "2.0.0-alpha.2"
+
+# Gradle dependencies
 clikt = "5.1.0"
 kotlin = "2.3.10"
+ort = "79.1.0"
 
 [libraries]
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 
 [plugins]
+detekt = { id = "dev.detekt", version.ref = "detektPlugin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

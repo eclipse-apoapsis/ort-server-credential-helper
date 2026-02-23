@@ -17,12 +17,15 @@
  * License-Filename: LICENSE
  */
 
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 plugins {
+    alias(libs.plugins.detekt)
     alias(libs.plugins.kotlinMultiplatform)
 }
 
@@ -56,4 +59,19 @@ kotlin {
             implementation(libs.clikt)
         }
     }
+}
+
+apply(plugin = "dev.detekt")
+
+dependencies {
+    detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${rootProject.libs.versions.detektPlugin.get()}")
+    detektPlugins("org.ossreviewtoolkit:detekt-rules:${rootProject.libs.versions.ort.get()}")
+}
+
+detekt {
+    // Only configure differences to the default.
+    buildUponDefaultConfig = true
+    config.from(files("$rootDir/.detekt.yml"))
+    basePath = rootDir
+    source.from(fileTree(".") { include("*.gradle.kts") }, "src/testFixtures/kotlin")
 }

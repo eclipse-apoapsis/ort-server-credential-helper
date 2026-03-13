@@ -20,7 +20,6 @@
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
@@ -36,20 +35,24 @@ repositories {
 }
 
 kotlin {
-    // Minimum number of platforms. To be extended in the future if needed.
     jvm {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        binaries {
-            executable {
-                mainClass = "org.eclipse.apoapsis.ortserver.credentialhelper.CredentialHelper"
+        testRuns.all {
+            executionTask {
+                useJUnitPlatform()
             }
         }
     }
+
+    linuxX64()
+    macosX64()
+    macosArm64()
+    mingwX64()
 
     targets.withType<KotlinNativeTarget> {
         binaries {
             executable(setOf(NativeBuildType.RELEASE)) {
                 entryPoint = "org.eclipse.apoapsis.ortserver.credentialhelper.main"
+                baseName = "credentialhelper"
             }
         }
     }
@@ -57,6 +60,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.clikt)
+            implementation(libs.okio)
+        }
+
+        jvmTest.dependencies {
+            implementation(libs.kotestFrameworkEngine)
+            implementation(libs.kotestAssertionsCore)
+            implementation(libs.kotestRunnerJunit5)
         }
     }
 }

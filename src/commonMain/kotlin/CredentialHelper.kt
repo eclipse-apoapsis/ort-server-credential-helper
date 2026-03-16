@@ -20,27 +20,39 @@
 package org.eclipse.apoapsis.ortserver.credentialhelper
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.mordant.platform.MultiplatformSystem.exitProcess
 
-const val COMMAND_NAME = "credentialhelper"
+import org.eclipse.apoapsis.ortserver.credentialhelper.git.GitCredentialHelper
 
 fun main(args: Array<String>) {
-    CredentialHelper().main(args)
+    CredentialHelper()
+        .subcommands(GitCredentialHelper())
+        .main(args)
     exitProcess(0)
 }
 
 /**
  * The main class for the credentials helper.
- * This class is responsible for parsing the command line arguments and executing the appropriate actions.
+ * Responsible for parsing the command line arguments and delegating the credential generation
+ * to the appropriate helper based on the first argument.
  */
-class CredentialHelper : CliktCommand(COMMAND_NAME) {
-    override fun run() {
-    }
+class CredentialHelper : CliktCommand() {
+    override fun help(context: Context) = """
+        ORT Server Credential Helper
 
-    private val help by option(
-        "--help",
-        help = "Placeholder for help message."
-    )
+        The tool to generate credentials for various CVS-es.
+
+        Usage:
+          credentialhelper <type> [options]
+
+        Supported helpers:
+          git     Generates a Git-style credential helper output.
+    """.trimIndent()
+
+    override fun run() {
+        Logger.instance.log("Credentials helper started.")
+    }
 }

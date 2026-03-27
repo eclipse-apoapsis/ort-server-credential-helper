@@ -24,6 +24,28 @@ plugins {
 
 apply(plugin = "dev.detekt")
 
+subprojects {
+    tasks.whenTaskAdded {
+        if (name == "allTests") {
+            dependsOn(tasks.named("jvmTest"))
+        }
+    }
+
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+
+        testLogging {
+            events = setOf(
+                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+            )
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions = true
+            showStandardStreams = true
+        }
+    }
+}
+
 dependencies {
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${rootProject.libs.versions.detektPlugin.get()}")
     detektPlugins("org.ossreviewtoolkit:detekt-rules:${rootProject.libs.versions.ort.get()}")

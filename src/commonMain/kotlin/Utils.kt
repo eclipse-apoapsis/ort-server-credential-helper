@@ -27,3 +27,11 @@ import okio.Path
  * @return The expected [Path] to the temporary directory, which is platform-specific.
  */
 expect fun getTmpDir(): Path
+
+/**
+ * Return the home directory of the current user based on the operating system.
+ *
+ * @return The [Path] to the home directory of the current user, which is platform-specific.
+ */
+expect fun getHomeDirectory(): Path
+

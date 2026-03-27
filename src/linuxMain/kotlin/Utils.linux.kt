@@ -36,7 +36,7 @@ actual fun getTmpDir(): Path = requireNotNull(
 )
 
 @OptIn(ExperimentalForeignApi::class)
-fun getHomeDirectory(): Path = requireNotNull(
+actual fun getHomeDirectory(): Path = requireNotNull(
     getEnv("HOME")?.toPath() ?: getpwuid(getuid())?.pointed?.pw_dir?.toKString()?.toPath()
 )
 

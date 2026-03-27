@@ -24,10 +24,13 @@ import okio.Path
 import okio.SYSTEM
 import okio.buffer
 
+import org.eclipse.apoapsis.ortserver.credentialhelper.getHomeDirectory
+
 /**
  * Return the expected, platform-specific [Path] to the Git credentials file.
  */
-internal expect fun getExpectedGitCredentialsFilePath(): Path
+internal fun getExpectedGitCredentialsFilePath(): Path =
+    getHomeDirectory().resolve(".git-credentials")
 
 /**
  * Parse the input parameter lines [stdinLines] received from stdin and return a [CredentialRequest] object.

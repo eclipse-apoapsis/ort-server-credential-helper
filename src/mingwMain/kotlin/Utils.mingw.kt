@@ -31,7 +31,7 @@ actual fun getTmpDir(): Path = requireNotNull(
     getEnv("LOCALAPPDATA")?.toPath()?.resolve("Temp")
 )
 
-fun getHomeDirectory(): Path = requireNotNull(
+actual fun getHomeDirectory(): Path = requireNotNull(
     getEnv("XDG_CONFIG_HOME")?.toPath()
 )
 

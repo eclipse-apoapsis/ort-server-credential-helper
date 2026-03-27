@@ -25,6 +25,6 @@ import okio.Path.Companion.toPath
 actual fun getTmpDir(): Path =
     System.getProperty("java.io.tmpdir").toPath()
 
-fun getHomeDirectory(): Path = requireNotNull(
+actual fun getHomeDirectory(): Path = requireNotNull(
     System.getProperty("user.home")?.toPath()
 )

@@ -24,8 +24,8 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.mordant.platform.MultiplatformSystem
 
-import org.eclipse.apoapsis.ortserver.credentialhelper.Logger
-import org.eclipse.apoapsis.ortserver.credentialhelper.Logger.LogLevel.ERROR
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger.LogLevel.ERROR
 
 const val COMMAND_PARAM_NAME = "git"
 
@@ -131,3 +131,4 @@ internal data class Credentials(
             "password=${if (password.isNotEmpty()) "*******" else ""}"
     }
 }
+

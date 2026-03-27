@@ -23,3 +23,14 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = "apoapsis-ort-server-credential-helper"
+
+include(":common")
+include(":git")

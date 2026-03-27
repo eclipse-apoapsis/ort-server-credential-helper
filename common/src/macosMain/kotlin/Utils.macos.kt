@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package org.eclipse.apoapsis.ortserver.credentialhelper
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.pointed
@@ -32,7 +32,7 @@ import platform.posix.getuid
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun getTmpDir(): Path = requireNotNull(
-    getEnv("TMPDIR")?.toPath() ?: "/tmp".toPath()
+    getEnv("TMPDIR")?.toPath() ?: "/private/tmp".toPath()
 )
 
 @OptIn(ExperimentalForeignApi::class)
@@ -42,3 +42,4 @@ actual fun getHomeDirectory(): Path = requireNotNull(
 
 @OptIn(ExperimentalForeignApi::class)
 private fun getEnv(name: String) = getenv(name)?.toKString()
+

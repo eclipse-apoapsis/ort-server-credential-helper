@@ -17,21 +17,29 @@
  * License-Filename: LICENSE
  */
 
-package org.eclipse.apoapsis.ortserver.credentialhelper
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
+
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.toKString
 
 import okio.Path
+import okio.Path.Companion.toPath
 
-/**
- * Return the expected path to the temporary directory based on the operating system.
- *
- * @return The expected [Path] to the temporary directory, which is platform-specific.
- */
-expect fun getTmpDir(): Path
+import platform.posix.getenv
+import platform.posix.getpwuid
+import platform.posix.getuid
 
-/**
- * Return the home directory of the current user based on the operating system.
- *
- * @return The [Path] to the home directory of the current user, which is platform-specific.
- */
-expect fun getHomeDirectory(): Path
+@OptIn(ExperimentalForeignApi::class)
+actual fun getTmpDir(): Path = requireNotNull(
+    getEnv("TMPDIR")?.toPath() ?: "/tmp".toPath()
+)
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun getHomeDirectory(): Path = requireNotNull(
+    getEnv("HOME")?.toPath() ?: getpwuid(getuid())?.pointed?.pw_dir?.toKString()?.toPath()
+)
+
+@OptIn(ExperimentalForeignApi::class)
+private fun getEnv(name: String) = getenv(name)?.toKString()
 

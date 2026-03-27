@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package org.eclipse.apoapsis.ortserver.credentialhelper
+package org.eclipse.apoapsis.ortserver.credentialhelper.git
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -25,7 +25,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.mordant.platform.MultiplatformSystem.exitProcess
 
-import org.eclipse.apoapsis.ortserver.credentialhelper.git.GitCredentialHelper
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger
 
 fun main(args: Array<String>) {
     CredentialHelper()
@@ -56,3 +56,4 @@ class CredentialHelper : CliktCommand() {
         Logger.instance.log("Credentials helper started.")
     }
 }
+

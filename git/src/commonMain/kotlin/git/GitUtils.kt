@@ -24,7 +24,7 @@ import okio.Path
 import okio.SYSTEM
 import okio.buffer
 
-import org.eclipse.apoapsis.ortserver.credentialhelper.getHomeDirectory
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.getHomeDirectory
 
 /**
  * Return the expected, platform-specific [Path] to the Git credentials file.
@@ -100,7 +100,7 @@ internal fun readGitCredentialFileContent(): String =
  * The Git credentials file is expected to have lines in the format:
  * `protocol://username:password@host/path`
  *
- * Parse the string content of Git gretentials file passed in [fileContent].
+ * Parse the string content of Git credentials file passed in [fileContent].
  * Return a list of [Credentials] objects parsed from the file content.
  */
 internal fun parseGitCredentialsFileContent(fileContent: String): List<Credentials> =
@@ -134,7 +134,7 @@ private fun String.toCredentials(): Credentials {
 
 /**
  * Find the closest matching [Credentials] for a given [requestedCredentials] from a list of [availableCredentials].
- * The matching is based on the host and path of the URL. in case of multiple matches, the one with the longest
+ * The matching is based on the host and path of the URL. In case of multiple matches, the one with the longest
  * matching path is returned. If no match is found, return [requestedCredentials].
  */
 internal fun findClosestMatchingCredential(
@@ -156,3 +156,4 @@ internal fun findClosestMatchingCredential(
             password = ""
         )
 }
+

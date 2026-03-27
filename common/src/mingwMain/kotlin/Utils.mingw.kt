@@ -17,14 +17,24 @@
  * License-Filename: LICENSE
  */
 
-package org.eclipse.apoapsis.ortserver.credentialhelper
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
+
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 
 import okio.Path
 import okio.Path.Companion.toPath
 
-actual fun getTmpDir(): Path =
-    System.getProperty("java.io.tmpdir").toPath()
+import platform.posix.getenv
+
+actual fun getTmpDir(): Path = requireNotNull(
+    getEnv("LOCALAPPDATA")?.toPath()?.resolve("Temp")
+)
 
 actual fun getHomeDirectory(): Path = requireNotNull(
-    System.getProperty("user.home")?.toPath()
+    getEnv("XDG_CONFIG_HOME")?.toPath()
 )
+
+@OptIn(ExperimentalForeignApi::class)
+private fun getEnv(name: String) = getenv(name)?.toKString()
+

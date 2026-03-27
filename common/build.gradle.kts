@@ -18,21 +18,21 @@
  */
 
 plugins {
-    alias(libs.plugins.detekt)
-    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinMultiplatform)
 }
 
-apply(plugin = "dev.detekt")
+group = "org.eclipse.apoapsis.ortserver.credentialhelper.common"
 
-dependencies {
-    detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${rootProject.libs.versions.detektPlugin.get()}")
-    detektPlugins("org.ossreviewtoolkit:detekt-rules:${rootProject.libs.versions.ort.get()}")
+kotlin {
+    jvm()
+    linuxX64()
+    macosArm64()
+    mingwX64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.okio)
+        }
+    }
 }
 
-detekt {
-    // Only configure differences to the default.
-    buildUponDefaultConfig = true
-    config.from(files("$rootDir/.detekt.yml"))
-    basePath = rootDir
-    source.from(fileTree(".") { include("*.gradle.kts") }, "src/testFixtures/kotlin")
-}

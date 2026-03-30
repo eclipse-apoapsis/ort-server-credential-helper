@@ -26,6 +26,8 @@ import com.github.ajalt.mordant.platform.MultiplatformSystem
 
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger.LogLevel.ERROR
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.findClosestMatch
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.parseCredentialsFile
 
 const val COMMAND_PARAM_NAME = "git"
 
@@ -90,9 +92,12 @@ internal class GitCredentialHelper : CliktCommand(COMMAND_PARAM_NAME) {
     }
 
     private fun findCredentialsForUrl(credentialsToMatch: CredentialRequest): Credentials {
-        val credentialsFileContent = readGitCredentialFileContent()
-        val availableCredentials = parseGitCredentialsFileContent(credentialsFileContent)
-        return findClosestMatchingCredential(credentialsToMatch, availableCredentials)
+        val availableCredentials = parseCredentialsFile(getExpectedGitCredentialsFilePath())
+
+        val requestedUrl = "${credentialsToMatch.protocol}://${credentialsToMatch.host}${credentialsToMatch.path}"
+        return availableCredentials.findClosestMatch(requestedUrl)?.let { authInfo ->
+            createCredentials(credentialsToMatch, authInfo.username, authInfo.password)
+        } ?: createCredentials(credentialsToMatch, "", "")
     }
 
     private fun generateOutput(credentials: Credentials) {
@@ -130,3 +135,15 @@ internal data class Credentials(
                 "username=$username, " +
                 "password=${if (password.isNotEmpty()) "*******" else ""}"
 }
+
+/**
+ * Create a [Credentials] object based on the given [request] with the provided [username] and [password].
+ */
+private fun createCredentials(request: CredentialRequest, username: String, password: String): Credentials =
+    Credentials(
+        protocol = request.protocol,
+        host = request.host,
+        path = request.path,
+        username = username,
+        password = password
+    )

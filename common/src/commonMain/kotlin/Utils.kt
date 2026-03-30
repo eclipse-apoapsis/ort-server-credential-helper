@@ -34,4 +34,3 @@ expect fun getTmpDir(): Path
  * @return The [Path] to the home directory of the current user, which is platform-specific.
  */
 expect fun getHomeDirectory(): Path
-

@@ -37,4 +37,3 @@ actual fun getHomeDirectory(): Path = requireNotNull(
 
 @OptIn(ExperimentalForeignApi::class)
 private fun getEnv(name: String) = getenv(name)?.toKString()
-

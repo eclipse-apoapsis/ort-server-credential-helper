@@ -63,4 +63,3 @@ class Logger private constructor() {
         ERROR
     }
 }
-

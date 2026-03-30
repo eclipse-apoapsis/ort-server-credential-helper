@@ -123,12 +123,10 @@ internal data class Credentials(
     val username: String,
     val password: String
 ) {
-    override fun toString(): String {
-        return "protocol='$protocol', " +
-            "host='$host', " +
-            "path='$path', " +
-            "username=${username}, " +
-            "password=${if (password.isNotEmpty()) "*******" else ""}"
-    }
+    override fun toString(): String =
+        "protocol='$protocol', " +
+                "host='$host', " +
+                "path='$path', " +
+                "username=$username, " +
+                "password=${if (password.isNotEmpty()) "*******" else ""}"
 }
-

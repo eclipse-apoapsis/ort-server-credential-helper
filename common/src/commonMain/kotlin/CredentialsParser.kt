@@ -52,6 +52,7 @@ internal fun String.urlDecode(): String {
     while (i < this.length) {
         when (val c = this[i]) {
             '+' -> output.append(' ')
+
             '%' -> {
                 try {
                     val hex = this.substring(i + 1, i + 3)

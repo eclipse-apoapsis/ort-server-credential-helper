@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import dev.detekt.gradle.Detekt
+
 plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.kotlinMultiplatform) apply false
@@ -25,6 +27,47 @@ plugins {
 apply(plugin = "dev.detekt")
 
 subprojects {
+    apply(plugin = "dev.detekt")
+
+    dependencies {
+        "detektPlugins"("dev.detekt:detekt-rules-ktlint-wrapper:${rootProject.libs.versions.detektPlugin.get()}")
+        "detektPlugins"("org.ossreviewtoolkit:detekt-rules:${rootProject.libs.versions.ort.get()}")
+    }
+
+    pluginManager.withPlugin("dev.detekt") {
+        (extensions.getByName("detekt") as dev.detekt.gradle.extensions.DetektExtension).apply {
+            buildUponDefaultConfig = true
+            config.from(rootProject.files(".detekt.yml"))
+            basePath = rootDir
+
+            source.from(
+                fileTree(".") { include("*.gradle.kts") },
+                "src/commonMain/kotlin",
+                "src/commonTest/kotlin",
+                "src/jvmMain/kotlin",
+                "src/jvmTest/kotlin",
+                "src/linuxMain/kotlin",
+                "src/macosMain/kotlin",
+                "src/mingwMain/kotlin"
+            )
+        }
+    }
+
+    tasks.withType<Detekt>().configureEach {
+        exclude {
+            "/build/generated/" in it.file.absoluteFile.invariantSeparatorsPath
+        }
+    }
+
+    afterEvaluate {
+        tasks.register("detektAll") {
+            group = "Verification"
+            description = "Run all detekt tasks."
+
+            dependsOn(tasks.withType<Detekt>().filterNot { it.name == "detekt" })
+        }
+    }
+
     tasks.whenTaskAdded {
         if (name == "allTests") {
             dependsOn(tasks.named("jvmTest"))

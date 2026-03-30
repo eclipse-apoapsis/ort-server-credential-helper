@@ -26,7 +26,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
-class UtilsTest : WordSpec({
+class GitUtilsTest : WordSpec({
     "parseInputParamLines" should {
         "properly parse credentials request lines" {
             val requestLines = listOf(
@@ -376,4 +376,3 @@ private val credentialsList = listOf(
         password = "password888"
     )
 )
-

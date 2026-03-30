@@ -56,4 +56,3 @@ class CredentialHelper : CliktCommand() {
         Logger.instance.log("Credentials helper started.")
     }
 }
-

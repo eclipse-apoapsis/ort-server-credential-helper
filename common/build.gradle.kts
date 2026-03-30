@@ -33,6 +33,12 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.okio)
         }
+
+        jvmTest.dependencies {
+            implementation(libs.kotestFrameworkEngine)
+            implementation(libs.kotestAssertionsCore)
+            implementation(libs.kotestRunnerJunit5)
+        }
     }
 }
 

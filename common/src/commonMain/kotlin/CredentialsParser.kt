@@ -78,6 +78,21 @@ internal fun readCredentialFileContent(path: Path): String =
     FileSystem.SYSTEM.source(path).buffer().readUtf8()
 
 /**
+ * Regex to parse a URL of the form `protocol://username:password@host/path`.
+ * The password may contain '@' characters; the last '@' before the host is used as the separator.
+ * The credentials part (`username:password@`) as well as the path and query-string components are optional.
+ * Any query parameters (starting with '?') are matched but not captured, effectively stripping them.
+ *
+ * Named groups:
+ * - `username`: URL-encoded username (optional)
+ * - `password`: URL-encoded password, may contain '@' and ':' (optional)
+ * - `host`:     hostname (and optional port)
+ * - `path`:     optional path after the host, without leading slash and without query parameters
+ */
+internal val URL_REGEX =
+    Regex("""^[^:]+://(?:(?<username>[^:]+):(?<password>.+)@)?(?<host>[^/?]+)(?:/(?<path>[^?]*))?(?:\?.*)?$""")
+
+/**
  * Parse the content of a credentials file and return a list of [AuthenticationInfo] objects.
  *
  * The Git credentials file is expected to have lines in the format:
@@ -86,28 +101,21 @@ internal fun readCredentialFileContent(path: Path): String =
  */
 private fun parseCredentialsFileContent(fileContent: String): List<AuthenticationInfo> =
     fileContent.split("\n")
+        .asSequence()
         .map { it.trim() }
         .filter { it.isNotEmpty() }
-        .filter { it.contains("@") } // Indicates, that the line contains credentials in the expected format
+        .mapNotNull { URL_REGEX.matchEntire(it) }
+        .filter { match -> match.groups["username"] != null && match.groups["password"] != null }
         .map { it.toAuthenticationInfo() }
+        .toList()
 
 /**
- * Return an [AuthenticationInfo] object containing information parsed from received [String] in
- * format `protocol://username:password@host/path`.
+ * Return an [AuthenticationInfo] object from a [MatchResult] of [URL_REGEX].
  */
-private fun String.toAuthenticationInfo(): AuthenticationInfo {
-    // Find position of last '@' symbol to separate credentials from host and path, as '@' can be present
-    // in password as well.
-    val credentialsSplitPoint = this.lastIndexOf("@")
-
-    val credentialsPart = this.substring(0, credentialsSplitPoint).substringAfter("://")
-    val hostAndPathPart = this.substring(credentialsSplitPoint + 1)
-
-    return AuthenticationInfo(
-        host = hostAndPathPart.substringBefore("/").trim(),
-        path = hostAndPathPart.takeIf { "/" in it }?.substringAfter("/")?.substringBefore("?")?.trim()
-            ?.takeIf { it.isNotEmpty() },
-        username = credentialsPart.substringBefore(":").trim().urlDecode(),
-        password = credentialsPart.substringAfter(":").trim().urlDecode()
+private fun MatchResult.toAuthenticationInfo(): AuthenticationInfo =
+    AuthenticationInfo(
+        host = requireNotNull(groups["host"]).value,
+        path = groups["path"]?.value?.takeIf { it.isNotEmpty() },
+        username = groups["username"]?.value.orEmpty().urlDecode(),
+        password = groups["password"]?.value.orEmpty().urlDecode()
     )
-}

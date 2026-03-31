@@ -33,3 +33,5 @@ actual fun getHomeDirectory(): Path = requireNotNull(
 )
 
 actual fun stdinSource(): BufferedSource = System.`in`.source().buffer()
+
+actual fun exitProcess(exitCode: Int): Nothing = kotlin.system.exitProcess(exitCode)

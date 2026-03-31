@@ -44,3 +44,8 @@ expect fun getHomeDirectory(): Path
  * tests by passing a pre-filled [okio.Buffer] instead of this default.
  */
 expect fun stdinSource(): BufferedSource
+
+/**
+ * Terminate the current process with the given [exitCode].
+ */
+expect fun exitProcess(exitCode: Int): Nothing

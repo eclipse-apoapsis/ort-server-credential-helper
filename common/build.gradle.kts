@@ -38,6 +38,7 @@ kotlin {
             implementation(libs.kotestFrameworkEngine)
             implementation(libs.kotestAssertionsCore)
             implementation(libs.kotestRunnerJunit5)
+            implementation(libs.mockk)
         }
     }
 }

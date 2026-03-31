@@ -19,8 +19,11 @@
 
 package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
+import okio.BufferedSource
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.buffer
+import okio.source
 
 actual fun getTmpDir(): Path =
     System.getProperty("java.io.tmpdir").toPath()
@@ -28,3 +31,5 @@ actual fun getTmpDir(): Path =
 actual fun getHomeDirectory(): Path = requireNotNull(
     System.getProperty("user.home")?.toPath()
 )
+
+actual fun stdinSource(): BufferedSource = System.`in`.source().buffer()

@@ -24,10 +24,13 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.mordant.platform.MultiplatformSystem
 
+import okio.BufferedSource
+
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger.LogLevel.ERROR
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.findClosestMatch
 import org.eclipse.apoapsis.ortserver.credentialhelper.common.parseCredentialsFile
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.stdinSource
 
 const val COMMAND_PARAM_NAME = "git"
 
@@ -50,7 +53,10 @@ const val COMMAND_PARAM_NAME = "git"
  * user=some-git-user
  * password=some-git-password
  */
-internal class GitCredentialHelper : CliktCommand(COMMAND_PARAM_NAME) {
+internal class GitCredentialHelper(
+    /** The source to read input from. */
+    private val inputSource: BufferedSource = stdinSource()
+) : CliktCommand(COMMAND_PARAM_NAME) {
     val commandLineArguments: List<String> by argument().multiple()
 
     /**
@@ -65,7 +71,7 @@ internal class GitCredentialHelper : CliktCommand(COMMAND_PARAM_NAME) {
             MultiplatformSystem.exitProcess(1)
         }
 
-        val stdinLines = generateSequence { readlnOrNull() }
+        val stdinLines = generateSequence { inputSource.readUtf8Line() }
             .toCollection(mutableListOf())
             .map { it.trim() }
             .filter { it.isNotEmpty() }

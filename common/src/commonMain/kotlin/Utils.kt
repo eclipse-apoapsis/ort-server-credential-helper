@@ -19,6 +19,7 @@
 
 package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
+import okio.BufferedSource
 import okio.Path
 
 /**
@@ -34,3 +35,12 @@ expect fun getTmpDir(): Path
  * @return The [Path] to the home directory of the current user, which is platform-specific.
  */
 expect fun getHomeDirectory(): Path
+
+/**
+ * Return a [BufferedSource] that reads from standard input (stdin).
+ *
+ * The returned source can be used for line-by-line reading as well as for structured parsing
+ * (e.g. JSON via kotlinx.serialization with an okio-backed decoder), and is injectable in
+ * tests by passing a pre-filled [okio.Buffer] instead of this default.
+ */
+expect fun stdinSource(): BufferedSource

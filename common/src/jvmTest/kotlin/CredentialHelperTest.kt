@@ -1,0 +1,179 @@
+/*
+ * Copyright (C) 2026 The ORT Server Authors (See <https://github.com/eclipse-apoapsis/ort-server/blob/main/NOTICE>)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * License-Filename: LICENSE
+ */
+
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
+
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.inspectors.forAll
+import io.kotest.matchers.shouldBe
+
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
+import io.mockk.verify
+
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicInteger
+
+import okio.BufferedSource
+import okio.Path.Companion.toOkioPath
+
+class CredentialHelperTest : StringSpec({
+    afterEach {
+        unmockkAll()
+    }
+
+    "A failure code should be returned for an unknown command" {
+        val unknownCommand = "don't-know-it"
+
+        val output = testCredentialHelperRequest(arrayOf(unknownCommand), 2)
+
+        verifyNoAction(output)
+    }
+
+    "A failure code should be returned if no command is specified" {
+        val output = testCredentialHelperRequest(emptyArray(), 2)
+
+        verifyNoAction(output)
+    }
+
+    "A failure code should be returned if multiple commands are specified" {
+        val output = testCredentialHelperRequest(arrayOf(CREDENTIALS_COMMAND, "c2"), 2)
+
+        verifyNoAction(output)
+    }
+
+    "A failure code should be returned if invalid input is detected" {
+        val output = testCredentialHelperRequest(arrayOf(CREDENTIALS_COMMAND), 1, failInput = true)
+
+        verifyNoAction(output)
+    }
+
+    "Commands to ignore should be handled" {
+        commandsToIgnore.forAll { command ->
+            val output = testCredentialHelperRequest(arrayOf(command), 0)
+
+            verifyNoAction(output)
+        }
+    }
+
+    "A request for credentials should be handled" {
+        val output = testCredentialHelperRequest(arrayOf(CREDENTIALS_COMMAND), TEST_EXIT_CODE)
+
+        output shouldBe TEST_OUTPUT
+    }
+})
+
+/**
+ * Execute a test of the main function of the credential helper framework with the given
+ * [command line arguments][args], expecting the given [expectedExitCode]. If [failInput] is *true*, simulate invalid
+ * input by letting the input reader function return a failure result.
+ */
+private fun testCredentialHelperRequest(
+    args: Array<String>,
+    expectedExitCode: Int,
+    failInput: Boolean = false
+): String {
+    mockkStatic(::stdinSource, ::parseCredentialsFile, ::exitProcess)
+    mockkStatic("org.eclipse.apoapsis.ortserver.credentialhelper.common.CredentialsMatcherKt")
+
+    val inputSource = mockk<BufferedSource>()
+    every { stdinSource() } returns inputSource
+    every { parseCredentialsFile(credentialsFilePath) } returns authenticationInfos
+    every { authenticationInfos.findClosestMatch(TEST_URL) } returns authInfo
+
+    val refExitCode = AtomicInteger(-1)
+    val out = ByteArrayOutputStream()
+    System.setOut(PrintStream(out))
+
+    val request = CredentialsRequest(
+        inputReader = { source ->
+            source shouldBe inputSource
+            if (failInput) {
+                Result.failure(IllegalArgumentException("Test exception: Invalid input."))
+            } else {
+                Result.success(RequestUrl(TEST_URL, TEST_CONTEXT))
+            }
+        },
+        resultGenerator = { context, cred ->
+            cred shouldBe authInfo
+            context shouldBe RequestUrl(TEST_URL, TEST_CONTEXT)
+            CredentialHelperResult(TEST_OUTPUT, TEST_EXIT_CODE)
+        },
+        credentialsFile = credentialsFilePath,
+        credentialCommand = CREDENTIALS_COMMAND,
+        ignoredCommands = commandsToIgnore
+    )
+
+    credentialHelperMain(args, request, mockExit(refExitCode))
+
+    refExitCode.get() shouldBe expectedExitCode
+    return out.toString()
+}
+
+/**
+ * Check that the main function did not perform any action and produced empty [output].
+ */
+private fun verifyNoAction(output: String) {
+    output shouldBe ""
+    verify(exactly = 0) {
+        parseCredentialsFile(any())
+    }
+}
+
+/**
+ * Return a function to exit the current process that only writes the exit code into the given [refCode].
+ */
+private fun mockExit(refCode: AtomicInteger): (Int) -> Unit =
+    { code -> refCode.set(code) }
+
+/** The test URL to be looked up. */
+private const val TEST_URL = "https://test.example.com/test/repo.git"
+
+/** The output generated by the test result function. */
+private const val TEST_OUTPUT = "lorem ipsum dolor sit amet consectetur adipiscing elit."
+
+/** The command to trigger a lookup for credentials. */
+private const val CREDENTIALS_COMMAND = "get-it"
+
+/** The context value returned by the test input reader function. */
+private const val TEST_CONTEXT = 42
+
+/** The exit code returned by the dummy result generator function. */
+private const val TEST_EXIT_CODE = 7
+
+/** The path to the credentials file used by tests. */
+private val credentialsFilePath = Paths.get("test", "credentials.json").toOkioPath()
+
+/** A set with other valid commands that should be ignored. */
+private val commandsToIgnore = setOf("test-it", "forget-it")
+
+/** The authentication information returned by the mocked matching function. */
+val authInfo = AuthenticationInfo(
+    host = "test.example.com",
+    path = "test/repo.git",
+    username = "test-user",
+    password = "test-pass"
+)
+
+/** The content of the credentials file used by tests. */
+private val authenticationInfos = listOf(authInfo, mockk())

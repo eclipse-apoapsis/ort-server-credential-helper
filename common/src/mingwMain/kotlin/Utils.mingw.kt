@@ -82,3 +82,5 @@ private class MingwStdinSource : Source {
 
     override fun close() { /* stdin is not closed. */ }
 }
+
+actual fun exitProcess(exitCode: Int): Nothing = kotlin.system.exitProcess(exitCode)

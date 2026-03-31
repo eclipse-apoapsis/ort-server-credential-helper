@@ -26,6 +26,7 @@ kotest = "6.1.9"
 kotlin = "2.3.20"
 okio = "3.17.0"
 ort = "79.1.0"
+mockk = "1.14.9"
 
 [libraries]
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
@@ -33,6 +34,7 @@ kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.re
 kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
 detekt = { id = "dev.detekt", version.ref = "detektPlugin" }

@@ -19,16 +19,27 @@
 
 package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
+import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
+import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.toKString
 
+import okio.Buffer
+import okio.BufferedSource
 import okio.Path
 import okio.Path.Companion.toPath
+import okio.Source
+import okio.Timeout
+import okio.buffer
 
+import platform.posix.STDIN_FILENO
 import platform.posix.getenv
 import platform.posix.getpwuid
 import platform.posix.getuid
+import platform.posix.read
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun getTmpDir(): Path = requireNotNull(
@@ -40,5 +51,38 @@ actual fun getHomeDirectory(): Path = requireNotNull(
     getEnv("HOME")?.toPath() ?: getpwuid(getuid())?.pointed?.pw_dir?.toKString()?.toPath()
 )
 
+actual fun stdinSource(): BufferedSource = PosixStdinSource().buffer()
+
 @OptIn(ExperimentalForeignApi::class)
 private fun getEnv(name: String) = getenv(name)?.toKString()
+
+/**
+ * A [Source] implementation that reads from stdin via the POSIX [read] syscall on file descriptor 0.
+ * This implementation is used as return value for the [stdinSource] function.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private class PosixStdinSource : Source {
+    private companion object {
+        const val BUFFER_SIZE = 8192L
+    }
+
+    override fun read(sink: Buffer, byteCount: Long): Long {
+        val toRead = minOf(byteCount, BUFFER_SIZE)
+        return memScoped {
+            val buf = allocArray<ByteVar>(toRead)
+            val bytesRead = read(STDIN_FILENO, buf, toRead.toULong())
+            when {
+                bytesRead > 0L -> {
+                    sink.write(buf.readBytes(bytesRead.toInt()))
+                    bytesRead
+                }
+
+                else -> -1L
+            }
+        }
+    }
+
+    override fun timeout(): Timeout = Timeout.NONE
+
+    override fun close() { /* stdin is not closed. */ }
+}

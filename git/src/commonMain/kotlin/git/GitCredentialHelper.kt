@@ -19,20 +19,21 @@
 
 package org.eclipse.apoapsis.ortserver.credentialhelper.git
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.mordant.platform.MultiplatformSystem
-
 import okio.BufferedSource
+import okio.Path
 
-import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger
-import org.eclipse.apoapsis.ortserver.credentialhelper.common.Logger.LogLevel.ERROR
-import org.eclipse.apoapsis.ortserver.credentialhelper.common.findClosestMatch
-import org.eclipse.apoapsis.ortserver.credentialhelper.common.parseCredentialsFile
-import org.eclipse.apoapsis.ortserver.credentialhelper.common.stdinSource
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.AuthenticationInfo
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.CredentialHelperResult
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.CredentialsRequest
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.RequestUrl
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.credentialHelperMain
+import org.eclipse.apoapsis.ortserver.credentialhelper.common.getHomeDirectory
 
-const val COMMAND_PARAM_NAME = "git"
+/** The name of the command that triggers a request for credentials. */
+private const val GIT_GET_CREDENTIALS_COMMAND = "get"
+
+/** A set with other valid commands that are not handled by this implementation. */
+private val ignoredCommands = setOf("store", "erase")
 
 /**
  * Generate credentials for Git based on the input provided by Git via stdin and the Git credentials file.
@@ -52,104 +53,109 @@ const val COMMAND_PARAM_NAME = "git"
  * path=/eclipse-apoapsis/ort-server.git
  * user=some-git-user
  * password=some-git-password
+ *
+ * See https://git-scm.com/docs/gitcredentials#_custom_helpers
  */
-internal class GitCredentialHelper(
-    /** The source to read input from. */
-    private val inputSource: BufferedSource = stdinSource()
-) : CliktCommand(COMMAND_PARAM_NAME) {
-    val commandLineArguments: List<String> by argument().multiple()
+fun main(args: Array<String>) {
+    val request = CredentialsRequest(
+        inputReader = ::parseInputSource,
+        resultGenerator = ::generateResult,
+        credentialsFile = getExpectedGitCredentialsFilePath(),
+        credentialCommand = GIT_GET_CREDENTIALS_COMMAND,
+        ignoredCommands = ignoredCommands
+    )
 
-    /**
-     * Generate credentials for Git based on the input provided by Git via stdin and the Git credentials file.
-     */
-    override fun run() {
-        Logger.instance.log("Git Credential Helper called with arguments: $commandLineArguments")
+    credentialHelperMain(args, request)
+}
 
-        // Only "get" git action is supported and should be passed by Git as first arg.
-        if (commandLineArguments.isEmpty() || commandLineArguments[0] != "get") {
-            Logger.instance.log("No Git action provided. Expected 'get' as first argument.", ERROR)
-            MultiplatformSystem.exitProcess(1)
-        }
+/**
+ * Data class representing a request for Git credentials, including the protocol, host, and path.
+ */
+internal data class GitCredentialRequest(
+    val protocol: String?,
+    val host: String?,
+    val path: String?
+)
 
+/**
+ * Return the expected, platform-specific [Path] to the Git credentials file.
+ */
+internal fun getExpectedGitCredentialsFilePath(): Path =
+    getHomeDirectory().resolve(".git-credentials")
+
+/**
+ * Parse the given [inputSource] to extract the properties for a [GitCredentialRequest]. Return a [RequestUrl]
+ * with this request or a failure result if mandatory properties are unspecified.
+ */
+private fun parseInputSource(inputSource: BufferedSource): Result<RequestUrl<GitCredentialRequest>> =
+    runCatching {
         val stdinLines = generateSequence { inputSource.readUtf8Line() }
             .toCollection(mutableListOf())
             .map { it.trim() }
             .filter { it.isNotEmpty() }
 
         val request = parseRequestFromStdinLines(stdinLines)
-        Logger.instance.log("Parsed requested credentials: $request")
+        requireNotNull(request.host) { "Missing mandatory input property 'host'." }
 
-        if (request.host.isEmpty() || request.protocol.isEmpty()) {
-            Logger.instance.log("Missing required parameters. Host and protocol must be provided.", ERROR)
-            MultiplatformSystem.exitProcess(1)
-        }
-
-        val matchedCredentials = findCredentialsForUrl(request)
-
-        if (matchedCredentials.password.isEmpty()) {
-            Logger.instance.log("No matching credentials found for: $request", ERROR)
-        } else {
-            Logger.instance.log("Found matching credentials: $matchedCredentials")
-        }
-
-        generateOutput(matchedCredentials)
-
-        Logger.instance.log("Git credential helper execution completed successfully.")
+        RequestUrl(request.toUrl(), request)
     }
 
-    private fun findCredentialsForUrl(credentialsToMatch: CredentialRequest): Credentials {
-        val availableCredentials = parseCredentialsFile(getExpectedGitCredentialsFilePath())
-
-        val requestedUrl = "${credentialsToMatch.protocol}://${credentialsToMatch.host}${credentialsToMatch.path}"
-        return availableCredentials.findClosestMatch(requestedUrl)?.let { authInfo ->
-            createCredentials(credentialsToMatch, authInfo.username, authInfo.password)
-        } ?: createCredentials(credentialsToMatch, "", "")
-    }
-
-    private fun generateOutput(credentials: Credentials) {
-        println("protocol=${credentials.protocol}")
-        println("host=${credentials.host}")
-        println("user=${credentials.username}")
-        println("password=${credentials.password}")
-    }
-}
-
 /**
- * Data class representing a request for Git credentials, including the protocol, host, and path.
+ * Parse the input parameter lines [stdinLines] received from stdin and return a [GitCredentialRequest] object.
+ *
+ * The input parameter lines are expected to be in the format:
+ * protocol=https
+ * host=github.com
+ * path=oss-review-toolkit/ort.git
  */
-internal data class CredentialRequest(
-    val protocol: String,
-    val host: String,
-    val path: String = ""
-)
+internal fun parseRequestFromStdinLines(stdinLines: List<String>): GitCredentialRequest {
+    val requestParams = stdinLines
+        .filter { it.contains("=") }
+        .associate { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
 
-/**
- * Data class representing the credentials for a Git repository,
- * including the protocol, host, path, username, and password.
- */
-internal data class Credentials(
-    val protocol: String,
-    val host: String,
-    val path: String,
-    val username: String,
-    val password: String
-) {
-    override fun toString(): String =
-        "protocol='$protocol', " +
-                "host='$host', " +
-                "path='$path', " +
-                "username=$username, " +
-                "password=${if (password.isNotEmpty()) "*******" else ""}"
-}
-
-/**
- * Create a [Credentials] object based on the given [request] with the provided [username] and [password].
- */
-private fun createCredentials(request: CredentialRequest, username: String, password: String): Credentials =
-    Credentials(
-        protocol = request.protocol,
-        host = request.host,
-        path = request.path,
-        username = username,
-        password = password
+    return GitCredentialRequest(
+        protocol = requestParams["protocol"],
+        host = requestParams["host"],
+        path = requestParams["path"]
     )
+}
+
+/**
+ * Generate the output for the given [request] and the found [authInfo]. The output is in the same format as the
+ * input, plus additional attributes if an [AuthenticationInfo] is available.
+ */
+private fun generateOutput(request: GitCredentialRequest, authInfo: AuthenticationInfo?): String =
+    buildList {
+        addAttribute("protocol", request.protocol)
+        addAttribute("host", request.host)
+        addAttribute("path", request.path)
+        addAttribute("username", authInfo?.username)
+        addAttribute("password", authInfo?.password)
+    }.joinToString(separator = "\n")
+
+/**
+ * Generate the result object for the current credential helper invocation based on the given [requestUrl] and
+ * found [authInfo].
+ */
+private fun generateResult(
+    requestUrl: RequestUrl<GitCredentialRequest>,
+    authInfo: AuthenticationInfo?
+): CredentialHelperResult =
+    CredentialHelperResult(
+        output = generateOutput(requestUrl.context, authInfo),
+        // Status is always 0; if no credentials were found, the output will simply not contain user and
+        // password attributes, which is the expected behavior for Git.
+        exitCode = 0
+    )
+
+/**
+ * Convert the properties of this request to a URL that is expected by the credential helper framework.
+ */
+private fun GitCredentialRequest.toUrl(): String =
+    "${protocol ?: "https"}://${host}${path?.let { if (it.startsWith("/")) it else "/$it" }.orEmpty()}"
+
+/**
+ * Add the given [key]=[value] pair to this list if the [value] is not null.
+ */
+private fun MutableList<String>.addAttribute(key: String, value: String?) =
+    value?.also { add("$key=$it") }

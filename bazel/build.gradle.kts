@@ -52,6 +52,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinxSerializationJson)
+            implementation(libs.kotlinxSerializationJsonOkio)
             implementation(libs.okio)
             implementation(project(":common"))
         }

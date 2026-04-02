@@ -26,6 +26,7 @@ kotlin = "2.3.20"
 okio = "3.17.0"
 ort = "79.1.0"
 mockk = "1.14.9"
+testcontainers = "1.21.0"
 
 [libraries]
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
@@ -33,6 +34,7 @@ kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 
 [plugins]
 detekt = { id = "dev.detekt", version.ref = "detektPlugin" }

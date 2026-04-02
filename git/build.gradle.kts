@@ -59,6 +59,15 @@ kotlin {
             implementation(libs.kotestAssertionsCore)
             implementation(libs.kotestRunnerJunit5)
             implementation(libs.mockk)
+            implementation(libs.testcontainersCore)
         }
     }
+}
+
+val credentialHelperBinary = layout.buildDirectory
+    .file("bin/linuxX64/releaseExecutable/credentialhelper.kexe")
+
+tasks.named<Test>("jvmTest") {
+    dependsOn("linkReleaseExecutableLinuxX64")
+    systemProperty("credentialHelperBinary", credentialHelperBinary.get().asFile.absolutePath)
 }

@@ -28,6 +28,7 @@ kotlinxSerializationJson = "1.11.0"
 okio = "3.17.0"
 ort = "86.0.0"
 mockk = "1.14.9"
+testcontainers = "1.21.0"
 
 [libraries]
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
@@ -37,6 +38,7 @@ kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serializati
 kotlinxSerializationJsonOkio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinxSerializationJson" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 
 [plugins]
 detekt = { id = "dev.detekt", version.ref = "detektPlugin" }

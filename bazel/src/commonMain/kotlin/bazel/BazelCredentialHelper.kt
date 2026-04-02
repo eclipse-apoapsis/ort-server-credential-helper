@@ -17,21 +17,8 @@
  * License-Filename: LICENSE
  */
 
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
+package org.eclipse.apoapsis.ortserver.credentialhelper.bazel
+
+fun main(args: Array<String>) {
+    // TODO: Implement the Bazel credential helper.
 }
-
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
-
-rootProject.name = "apoapsis-ort-server-credential-helper"
-
-include(":bazel")
-include(":common")
-include(":git")

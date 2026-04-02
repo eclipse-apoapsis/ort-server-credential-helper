@@ -33,6 +33,7 @@ kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.re
 kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinxSerializationJsonOkio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinxSerializationJson" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 

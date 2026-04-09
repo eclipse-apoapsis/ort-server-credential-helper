@@ -17,60 +17,34 @@
  * License-Filename: LICENSE
  */
 
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.withType
-
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-
 plugins {
     alias(libs.plugins.detekt)
-    alias(libs.plugins.kotlinMultiplatform)
-}
-
-group = "org.eclipse.apoapsis.ortserver.credentialhelper"
-
-repositories {
-    mavenCentral()
-}
-
-kotlin {
-    jvm {
-        testRuns.all {
-            executionTask {
-                useJUnitPlatform()
-            }
-        }
-    }
-
-    linuxX64()
-    macosArm64()
-    mingwX64()
-
-    targets.withType<KotlinNativeTarget> {
-        binaries {
-            executable(setOf(NativeBuildType.RELEASE)) {
-                entryPoint = "org.eclipse.apoapsis.ortserver.credentialhelper.main"
-                baseName = "credentialhelper"
-            }
-        }
-    }
-
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.clikt)
-            implementation(libs.okio)
-        }
-
-        jvmTest.dependencies {
-            implementation(libs.kotestFrameworkEngine)
-            implementation(libs.kotestAssertionsCore)
-            implementation(libs.kotestRunnerJunit5)
-        }
-    }
+    alias(libs.plugins.kotlinMultiplatform) apply false
 }
 
 apply(plugin = "dev.detekt")
+
+subprojects {
+    tasks.whenTaskAdded {
+        if (name == "allTests") {
+            dependsOn(tasks.named("jvmTest"))
+        }
+    }
+
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+
+        testLogging {
+            events = setOf(
+                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+                org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+            )
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions = true
+            showStandardStreams = true
+        }
+    }
+}
 
 dependencies {
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${rootProject.libs.versions.detektPlugin.get()}")

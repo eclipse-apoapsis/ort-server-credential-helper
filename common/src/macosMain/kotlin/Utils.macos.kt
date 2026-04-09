@@ -17,20 +17,29 @@
  * License-Filename: LICENSE
  */
 
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.toKString
 
-rootProject.name = "apoapsis-ort-server-credential-helper"
+import okio.Path
+import okio.Path.Companion.toPath
 
-include(":common")
-include(":git")
+import platform.posix.getenv
+import platform.posix.getpwuid
+import platform.posix.getuid
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun getTmpDir(): Path = requireNotNull(
+    getEnv("TMPDIR")?.toPath() ?: "/private/tmp".toPath()
+)
+
+@OptIn(ExperimentalForeignApi::class)
+actual fun getHomeDirectory(): Path = requireNotNull(
+    getEnv("HOME")?.toPath() ?: getpwuid(getuid())?.pointed?.pw_dir?.toKString()?.toPath()
+)
+
+@OptIn(ExperimentalForeignApi::class)
+private fun getEnv(name: String) = getenv(name)?.toKString()
+

@@ -17,20 +17,20 @@
  * License-Filename: LICENSE
  */
 
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package org.eclipse.apoapsis.ortserver.credentialhelper.common
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
+import okio.Path
 
-rootProject.name = "apoapsis-ort-server-credential-helper"
+/**
+ * Return the expected path to the temporary directory based on the operating system.
+ *
+ * @return The expected [Path] to the temporary directory, which is platform-specific.
+ */
+expect fun getTmpDir(): Path
 
-include(":common")
-include(":git")
+/**
+ * Return the home directory of the current user based on the operating system.
+ *
+ * @return The [Path] to the home directory of the current user, which is platform-specific.
+ */
+expect fun getHomeDirectory(): Path

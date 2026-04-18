@@ -17,20 +17,22 @@
  * License-Filename: LICENSE
  */
 
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+}
+
+group = "org.eclipse.apoapsis.ortserver.credentialhelper.common"
+
+kotlin {
+    jvm()
+    linuxX64()
+    macosArm64()
+    mingwX64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.okio)
+        }
     }
 }
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
-
-rootProject.name = "apoapsis-ort-server-credential-helper"
-
-include(":common")
-include(":git")

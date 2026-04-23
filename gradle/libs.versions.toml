@@ -23,7 +23,7 @@ detektPlugin = "2.0.0-alpha.2"
 # Gradle dependencies
 clikt = "5.1.0"
 kotest = "6.1.11"
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 okio = "3.17.0"
 ort = "84.0.0"
 

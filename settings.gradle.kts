@@ -32,5 +32,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "apoapsis-ort-server-credential-helper"
 
+include(":bazel")
 include(":common")
 include(":git")

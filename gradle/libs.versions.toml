@@ -18,7 +18,7 @@
 [versions]
 
 # Gradle plugins
-detektPlugin = "2.0.0-alpha.2"
+detektPlugin = "2.0.0-alpha.3"
 
 # Gradle dependencies
 kotest = "6.1.11"

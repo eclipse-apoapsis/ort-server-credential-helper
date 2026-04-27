@@ -31,3 +31,16 @@ To use the credential helper for GIT, add the following configuration to `.gitco
    helper = "/path/to/executable/credentialhelper.kexe"
    useHttpPath = true
 ```
+
+## Bazel credential helper
+This implementation targets [Bazel](https://bazel.build/).
+
+Bazel can use [.netrc](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) files to retrieve credentials for HTTP requests. However, this has the limitation of supporting only one entry per host, which is not sufficient for ORT Server. It is, however, possible to configure Bazel to use an external credential helper for HTTP requests, which has to follow the [credential helpers specification](https://github.com/EngFlow/credential-helper-spec/blob/main/spec.md). The binary produced by this module implements this specification and works around the limitations of the .netrc file.
+
+The Bazel credential helper shares the same configuration format as the Git credential helper. Also, the matching logic is the same.
+
+To use the credential helper for Bazel, add the following configuration to `.bazelrc`:
+
+```
+common --credential_helper=/path/to/executable/bazel_cred_helper.kexe
+```

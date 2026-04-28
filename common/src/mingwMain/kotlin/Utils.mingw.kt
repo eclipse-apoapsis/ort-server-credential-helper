@@ -42,8 +42,10 @@ actual fun getTmpDir(): Path = requireNotNull(
 )
 
 actual fun getHomeDirectory(): Path = requireNotNull(
-    getEnv("XDG_CONFIG_HOME")?.toPath()
-)
+    getEnv("USERPROFILE")?.toPath() ?: getEnv("HOME")?.toPath()
+) {
+    "Could not determine the home directory."
+}
 
 actual fun stdinSource(): BufferedSource = MingwStdinSource().buffer()
 

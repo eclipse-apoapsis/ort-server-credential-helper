@@ -31,6 +31,90 @@ on:
       - main
 
 jobs:
+  build-native:
+    strategy:
+      matrix:
+        target:
+          - name: 'Linux x64'
+            os: ubuntu-24.04
+            gradleSuffix: 'LinuxX64'
+            platform: 'linux-x64'
+            binDir: 'linuxX64'
+            binExt: '.kexe'
+          - name: 'macOS arm64'
+            os: macos-26
+            gradleSuffix: 'MacosArm64'
+            platform: 'macos-arm64'
+            binDir: 'macosArm64'
+            binExt: '.kexe'
+          - name: 'Windows x64'
+            os: windows-2025
+            gradleSuffix: 'MingwX64'
+            platform: 'windows-x64'
+            binDir: 'mingwX64'
+            binExt: '.exe'
+
+    name: Build ${{ matrix.target.name }} native binaries
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Java
+        if: runner.os == 'Windows'
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+
+      - name: Get the Kotlin version
+        id: get-kotlin-plugin-info
+        shell: bash
+        run: echo "info=$(./gradlew -q :git:properties | grep kotlin.plugin.loaded.in.projects)" >> $GITHUB_OUTPUT
+
+      - name: Cache the .konan directory
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.konan
+          key: ${{ steps.get-kotlin-plugin-info.outputs.info }}
+
+      - name: Build native binaries - ${{ matrix.target.name }}
+        run: >
+          ./gradlew --stacktrace
+          git:linkReleaseExecutable${{ matrix.target.gradleSuffix }}
+          bazel:linkReleaseExecutable${{ matrix.target.gradleSuffix }}
+
+      - name: Stage git credential helper binary
+        shell: bash
+        run: |
+          mkdir -p git-credential-helper-${{ matrix.target.platform }}
+          mv git/build/bin/${{ matrix.target.binDir }}/releaseExecutable/credentialhelper${{ matrix.target.binExt }} \
+             git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+
+      - name: Stage Bazel credential helper binary
+        shell: bash
+        run: |
+          mkdir -p bazel-credential-helper-${{ matrix.target.platform }}
+          mv bazel/build/bin/${{ matrix.target.binDir }}/releaseExecutable/credentialhelper${{ matrix.target.binExt }} \
+             bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+
+      - name: Upload Git credential helper binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: git-credential-helper-${{ matrix.target.platform }}
+          path: git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+          retention-days: 7
+
+      - name: Upload Bazel credential helper binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bazel-credential-helper-${{ matrix.target.platform }}
+          path: bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+          retention-days: 7
+
   test:
     runs-on: ubuntu-24.04
     steps:

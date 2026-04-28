@@ -101,6 +101,24 @@ jobs:
           mv bazel/build/bin/${{ matrix.target.binDir }}/releaseExecutable/credentialhelper${{ matrix.target.binExt }} \
              bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
 
+      - name: Run Git credential helper
+        shell: bash
+        run: |
+          printf 'https://user:pass@github.com' > ~/.git-credentials
+          output=$(printf 'protocol=https\nhost=github.com' | \
+            ./git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }} get)
+          echo "$output" | grep -q 'username=user' || { echo "Missing username in output"; exit 1; }
+          echo "$output" | grep -q 'password=pass' || { echo "Missing password in output"; exit 1; }
+
+      - name: Run Bazel credential helper
+        shell: bash
+        run: |
+          printf 'https://user:pass@registry.example.com' > ~/.bazel-credentials
+          output=$(printf '{"uri":"https://registry.example.com"}' | \
+            ./bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }} get)
+          # base64("user:pass") = dXNlcjpwYXNz
+          echo "$output" | grep -q 'dXNlcjpwYXNz' || { echo "Missing Basic auth token in output"; exit 1; }
+
       - name: Upload Git credential helper binary
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

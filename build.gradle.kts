@@ -19,10 +19,50 @@
 
 import dev.detekt.gradle.Detekt
 
+import git.semver.plugin.gradle.PrintTask
+
+import org.gradle.api.tasks.TaskAction
+
 plugins {
     alias(libs.plugins.detekt)
+    alias(libs.plugins.gitSemver)
     alias(libs.plugins.kotlinMultiplatform) apply false
 }
+
+semver {
+    // Do not create an empty release commit when running the "releaseVersion" task.
+    createReleaseCommit = false
+
+    // Use "RC" instead of "SNAPSHOT" as the default pre-release identifier.
+    defaultPreRelease = "RC"
+
+    // Do not let untracked files bump the version or add a "-SNAPSHOT" suffix.
+    noDirtyCheck = true
+}
+
+// Only override a default version (which usually is "unspecified"), but not a custom version.
+if (version == Project.DEFAULT_VERSION) {
+    val semVersion = semver.semVersion
+
+    // Set the version based on the following rules:
+    // - If the current commit is tagged as a release (e.g., 1.2.3) or pre-release (e.g., 1.2.3-RC1), the version
+    //   equals the tag.
+    // - If the current commit is ahead of the last release or pre-release tag, the version is the tag plus the
+    //   pre-release identifier, the commit count, and the SHA. For example, "1.2.3-RC1.001.sha.0123456".
+    val shaLength = if (semVersion.commitCount > 0) 7 else 0
+    version = semVersion.toInfoVersionString(shaLength = shaLength).replace('+', '.')
+}
+
+logger.lifecycle("Building ORT Server Credential Helper version $version.")
+
+open class CredentialHelperPrintTask : PrintTask({ "" }, "Prints the current project version", "") {
+    private val projectVersion = project.version.toString()
+
+    @TaskAction
+    fun printVersion() = println(projectVersion)
+}
+
+tasks.replace("printVersion", CredentialHelperPrintTask::class.java)
 
 apply(plugin = "dev.detekt")
 

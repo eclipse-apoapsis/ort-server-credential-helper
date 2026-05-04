@@ -25,6 +25,7 @@ group = "org.eclipse.apoapsis.ortserver.credentialhelper.common"
 
 kotlin {
     jvm()
+    linuxArm64()
     linuxX64()
     macosArm64()
     mingwX64()

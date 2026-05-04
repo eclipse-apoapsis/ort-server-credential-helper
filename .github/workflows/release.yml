@@ -46,6 +46,13 @@ jobs:
             binDir: 'linuxX64'
             binExt: '.kexe'
             archiveExt: 'tar.gz'
+          - name: 'Linux arm64'
+            os: ubuntu-24.04
+            gradleSuffix: 'LinuxArm64'
+            platform: 'linux-arm64'
+            binDir: 'linuxArm64'
+            binExt: '.kexe'
+            archiveExt: 'tar.gz'
           - name: 'macOS arm64'
             os: macos-26
             gradleSuffix: 'MacosArm64'
@@ -162,6 +169,11 @@ jobs:
             platform: 'linux-x64'
             binExt: '.kexe'
             archiveExt: 'tar.gz'
+          - name: 'Linux arm64'
+            os: ubuntu-24.04-arm
+            platform: 'linux-arm64'
+            binExt: '.kexe'
+            archiveExt: 'tar.gz'
           - name: 'macOS arm64'
             os: macos-26
             platform: 'macos-arm64'
@@ -271,9 +283,11 @@ jobs:
 
           gh release create "$VERSION" --generate-notes $PRERELEASE_ARG \
             'artifacts/git-credential-helper-linux-x64/git-credential-helper-linux-x64.tar.gz#git-credential-helper-linux-x64' \
+            'artifacts/git-credential-helper-linux-arm64/git-credential-helper-linux-arm64.tar.gz#git-credential-helper-linux-arm64' \
             'artifacts/git-credential-helper-macos-arm64/git-credential-helper-macos-arm64.tar.gz#git-credential-helper-macos-arm64' \
             'artifacts/git-credential-helper-windows-x64/git-credential-helper-windows-x64.zip#git-credential-helper-windows-x64' \
             'artifacts/bazel-credential-helper-linux-x64/bazel-credential-helper-linux-x64.tar.gz#bazel-credential-helper-linux-x64' \
+            'artifacts/bazel-credential-helper-linux-arm64/bazel-credential-helper-linux-arm64.tar.gz#bazel-credential-helper-linux-arm64' \
             'artifacts/bazel-credential-helper-macos-arm64/bazel-credential-helper-macos-arm64.tar.gz#bazel-credential-helper-macos-arm64' \
             'artifacts/bazel-credential-helper-windows-x64/bazel-credential-helper-windows-x64.zip#bazel-credential-helper-windows-x64' \
             'checksums.txt#checksums'

@@ -41,6 +41,12 @@ jobs:
             platform: 'linux-x64'
             binDir: 'linuxX64'
             binExt: '.kexe'
+          - name: 'Linux arm64'
+            os: ubuntu-24.04
+            gradleSuffix: 'LinuxArm64'
+            platform: 'linux-arm64'
+            binDir: 'linuxArm64'
+            binExt: '.kexe'
           - name: 'macOS arm64'
             os: macos-26
             gradleSuffix: 'MacosArm64'
@@ -123,6 +129,10 @@ jobs:
           - name: 'Linux x64'
             os: ubuntu-24.04
             platform: 'linux-x64'
+            binExt: '.kexe'
+          - name: 'Linux arm64'
+            os: ubuntu-24.04-arm
+            platform: 'linux-arm64'
             binExt: '.kexe'
           - name: 'macOS arm64'
             os: macos-26

@@ -101,6 +101,60 @@ jobs:
           mv bazel/build/bin/${{ matrix.target.binDir }}/releaseExecutable/credentialhelper${{ matrix.target.binExt }} \
              bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
 
+      - name: Upload Git credential helper binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: git-credential-helper-${{ matrix.target.platform }}
+          path: git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+          retention-days: 7
+
+      - name: Upload Bazel credential helper binary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bazel-credential-helper-${{ matrix.target.platform }}
+          path: bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+          retention-days: 7
+
+  smoke-test-native:
+    needs: [build-native]
+    strategy:
+      matrix:
+        target:
+          - name: 'Linux x64'
+            os: ubuntu-24.04
+            platform: 'linux-x64'
+            binExt: '.kexe'
+          - name: 'macOS arm64'
+            os: macos-26
+            platform: 'macos-arm64'
+            binExt: '.kexe'
+          - name: 'Windows x64'
+            os: windows-2025
+            platform: 'windows-x64'
+            binExt: '.exe'
+
+    name: Smoke test ${{ matrix.target.name }} native binaries
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - name: Download Git credential helper binary
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: git-credential-helper-${{ matrix.target.platform }}
+          path: git-credential-helper-${{ matrix.target.platform }}
+
+      - name: Download Bazel credential helper binary
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bazel-credential-helper-${{ matrix.target.platform }}
+          path: bazel-credential-helper-${{ matrix.target.platform }}
+
+      - name: Make binaries executable
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+          chmod +x bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
+
       - name: Run Git credential helper
         shell: bash
         run: |
@@ -119,19 +173,6 @@ jobs:
           # base64("user:pass") = dXNlcjpwYXNz
           echo "$output" | grep -q 'dXNlcjpwYXNz' || { echo "Missing Basic auth token in output"; exit 1; }
 
-      - name: Upload Git credential helper binary
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: git-credential-helper-${{ matrix.target.platform }}
-          path: git-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
-          retention-days: 7
-
-      - name: Upload Bazel credential helper binary
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: bazel-credential-helper-${{ matrix.target.platform }}
-          path: bazel-credential-helper-${{ matrix.target.platform }}/credentialhelper${{ matrix.target.binExt }}
-          retention-days: 7
 
   test:
     runs-on: ubuntu-24.04

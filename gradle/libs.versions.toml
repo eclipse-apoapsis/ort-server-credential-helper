@@ -23,7 +23,7 @@ gitSemverPlugin = "0.19.0"
 
 # Gradle dependencies
 kotest = "6.1.11"
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 kotlinxSerializationJson = "1.11.0"
 okio = "3.17.0"
 ort = "87.3.0"

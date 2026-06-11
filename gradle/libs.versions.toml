@@ -19,7 +19,7 @@
 
 # Gradle plugins
 detektPlugin = "2.0.0-alpha.3"
-gitSemverPlugin = "0.19.1"
+gitSemverPlugin = "0.19.2"
 
 # Gradle dependencies
 kotest = "6.1.11"

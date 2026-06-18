@@ -22,7 +22,7 @@ detektPlugin = "2.0.0-alpha.3"
 gitSemverPlugin = "0.19.2"
 
 # Gradle dependencies
-kotest = "6.1.11"
+kotest = "6.2.1"
 kotlin = "2.4.0"
 kotlinxSerializationJson = "1.11.0"
 okio = "3.17.0"

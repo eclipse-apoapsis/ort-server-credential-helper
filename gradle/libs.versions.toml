@@ -26,7 +26,7 @@ kotest = "6.2.1"
 kotlin = "2.4.0"
 kotlinxSerializationJson = "1.11.0"
 okio = "3.17.0"
-ort = "90.0.0"
+ort = "91.0.1"
 mockk = "1.14.11"
 testcontainers = "2.0.5"
 

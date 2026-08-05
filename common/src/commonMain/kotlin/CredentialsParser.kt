@@ -83,14 +83,18 @@ internal fun readCredentialFileContent(path: Path): String =
  * The credentials part (`username:password@`) as well as the path and query-string components are optional.
  * Any query parameters (starting with '?') are matched but not captured, effectively stripping them.
  *
+ * Note: The password must not contain '/' because '/' terminates the authority component (RFC 3986).
+ * This prevents path components that contain '@' (e.g. `/x@host/`) from being misinterpreted as
+ * userinfo.
+ *
  * Named groups:
  * - `username`: URL-encoded username (optional)
- * - `password`: URL-encoded password, may contain '@' and ':' (optional)
+ * - `password`: URL-encoded password, may contain '@' but not '/' (optional)
  * - `host`:     hostname (and optional port)
  * - `path`:     optional path after the host, without leading slash and without query parameters
  */
 internal val URL_REGEX =
-    Regex("""^[^:]+://(?:(?<username>[^:]+):(?<password>.+)@)?(?<host>[^/?]+)(?:/(?<path>[^?]*))?(?:\?.*)?$""")
+    Regex("""^[^:]+://(?:(?<username>[^:]+):(?<password>[^/]+)@)?(?<host>[^/?]+)(?:/(?<path>[^?]*))?(?:\?.*)?$""")
 
 /**
  * Parse the content of a credentials file and return a list of [AuthenticationInfo] objects.

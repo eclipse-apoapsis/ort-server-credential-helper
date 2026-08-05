@@ -182,6 +182,20 @@ class CredentialsMatcherTest : StringSpec({
 
         infos.findClosestMatch("${testUrl()}?foo=bar,x=y") shouldBe match
     }
+
+    "The path should not be mistaken as userinfo" {
+        val url = "https://other-host.com:8443/x@$TEST_HOST/any"
+        val infos = listOf(
+            AuthenticationInfo(
+                host = TEST_HOST,
+                path = null,
+                username = "",
+                password = ""
+            )
+        )
+
+        infos.findClosestMatch(url) shouldBe null
+    }
 })
 
 private const val TEST_HOST = "test.example.com"

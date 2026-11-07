@@ -27,7 +27,7 @@ kotlin = "2.4.21"
 kotlinxSerializationJson = "1.12.0"
 okio = "3.18.2"
 ort = "97.3.0"
-mockk = "1.14.11"
+mockk = "1.14.12"
 testcontainers = "2.0.5"
 
 [libraries]
